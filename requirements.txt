@@ -1,0 +1,4 @@
+﻿azure-search-documents
+openai
+langchain-text-splitters
+python-dotenv
