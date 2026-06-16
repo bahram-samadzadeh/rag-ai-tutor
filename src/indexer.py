@@ -76,5 +76,4 @@ if __name__ == "__main__":
         full_text = f.read()
 
     # Test on the last 200k characters before scaling to the full document.
-    sample_text = full_text[-200000:]
-    build_and_upload(sample_text, source="fabric-data-engineering")
+    build_and_upload(full_text, source="fabric-data-engineering")
