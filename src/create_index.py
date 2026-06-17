@@ -34,6 +34,8 @@ def create_index() -> None:
         # content is searchable so we keep a keyword/text fallback alongside
         # vector search (hybrid retrieval is stronger than vector alone).
         SearchableField(name="content", type=SearchFieldDataType.String),
+        SimpleField(name="topic", type=SearchFieldDataType.String, filterable=True),
+        SimpleField(name="summary", type=SearchFieldDataType.String),
         SimpleField(name="source", type=SearchFieldDataType.String, filterable=True),
         SimpleField(name="chunk_index", type=SearchFieldDataType.Int32, filterable=True),
         SearchField(

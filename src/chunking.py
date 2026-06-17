@@ -6,8 +6,9 @@ embedding and storage in Azure AI Search. Uses LangChain's
 RecursiveCharacterTextSplitter so that natural boundaries (paragraphs,
 then lines, then sentences) are preserved as far as possible.
 """
+import json
+from .config import settings
 import hashlib
-
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 
@@ -49,3 +50,26 @@ def chunk_text(
         result.append({"id": chunk_id, "content": chunk, "source": source, "chunk_index": i})
 
     return result
+
+
+def save_chunks_json(chunks: list[dict], path: str) -> None:
+    """Persist chunks to JSON so the next pipeline stage (enrichment)
+    can read them independently, without re-running chunking."""
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(chunks, f, ensure_ascii=False, indent=2)
+    print(f"Wrote {len(chunks)} chunks to {path}")
+
+
+if __name__ == "__main__":
+    source = "fabric-data-engineering"
+
+    with open(f"data/raw/{source}.txt", "r", encoding="utf-8") as f:
+        full_text = f.read()
+
+    chunks = chunk_text(
+        full_text,
+        source=source,
+        chunk_size= settings.CHUNK_SIZE,
+        chunk_overlap= settings.CHUNK_OVERLAP,
+    )
+    save_chunks_json(chunks, f"data/processed/{source}_chunks.json")

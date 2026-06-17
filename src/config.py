@@ -11,7 +11,8 @@ class Settings:
     AOAI_KEY = os.environ["AZURE_OPENAI_KEY"]
     AOAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2024-10-21")
     EMBED_DEPLOYMENT = os.getenv("EMBED_DEPLOYMENT", "text-embedding-3-small")
-    CHAT_DEPLOYMENT = os.getenv("CHAT_DEPLOYMENT", "gpt-4.1")
+    CHAT_DEPLOYMENT = os.getenv("CHAT_DEPLOYMENT", "gpt-4.1-mini")
+    ENRICH_DEPLOYMENT = os.getenv("ENRICH_DEPLOYMENT", "gpt-4.1-mini")
     EMBED_DIMENSIONS = int(os.getenv("EMBED_DIMENSIONS", "1536"))
 
     # Azure AI Search
@@ -20,8 +21,8 @@ class Settings:
     INDEX_NAME = os.getenv("AZURE_SEARCH_INDEX", "rag-index")
 
     # Chunking
-    CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "800"))
-    CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "100"))
+    CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1500"))
+    CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
 
 
 settings = Settings()
