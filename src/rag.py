@@ -1,8 +1,8 @@
 """Query the RAG pipeline: retrieve relevant chunks and generate an answer.
 
-Embeds the user's question, runs a vector search against the index to
-find the most relevant chunks, then passes those chunks to the chat
-model as grounding context to generate a final answer.
+Embeds the user's question, runs a hybrid (vector + keyword) search against
+the index to find the most relevant chunks, then passes those chunks to the
+chat model as grounding context to generate a final answer.
 """
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
@@ -20,18 +20,33 @@ SYSTEM_PROMPT = (
     "don't know rather than guessing."
 )
 
+# Toggle to print retrieved chunks for inspection/debugging.
+DEBUG_RETRIEVAL = True
 
-def retrieve(search_client: SearchClient, query_vector: list[float], k: int = 5) -> list[dict]:
-    """Return the top-k most similar chunks for a query vector."""
+
+def retrieve(
+    search_client: SearchClient,
+    query_vector: list[float],
+    query_text: str,
+    k: int = 10,
+) -> list[dict]:
+    """Return the top-k most relevant chunks using hybrid search.
+
+    Passing both `search_text` (keyword/BM25) and `vector_queries` makes this
+    a hybrid query: semantic similarity catches paraphrases, while keyword
+    matching catches exact terms (e.g. "AutoSave", "Save failures") that a
+    pure vector search can rank too low.
+    """
     vector_query = VectorizedQuery(
         vector=query_vector,
         k_nearest_neighbors=k,
         fields="content_vector",
     )
     results = search_client.search(
-        search_text=None,
+        search_text=query_text,
         vector_queries=[vector_query],
-        select=["content", "source", "chunk_index"],
+        select=["content", "topic", "summary", "source", "chunk_index"],
+        top=k,
     )
     return list(results)
 
@@ -57,8 +72,17 @@ def answer_question(question: str) -> str:
     )
     query_vector = embed_response.data[0].embedding
 
-    # 2. Retrieve the most relevant chunks.
-    chunks = retrieve(search_client, query_vector)
+    # 2. Retrieve the most relevant chunks (hybrid search).
+    chunks = retrieve(search_client, query_vector, question)
+
+    if DEBUG_RETRIEVAL:
+        print("\n--- Retrieved chunks ---")
+        for i, c in enumerate(chunks):
+            preview = c["content"][:200].replace("\n", " ")
+            print(f"[{i + 1}] chunk_index={c['chunk_index']}  topic={c.get('topic')!r}")
+            print(f"     {preview}...\n")
+        print("--- end ---\n")
+
     context = "\n\n".join(c["content"] for c in chunks)
 
     # 3. Generate an answer grounded in the retrieved context.
