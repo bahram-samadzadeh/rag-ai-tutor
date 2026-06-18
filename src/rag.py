@@ -3,6 +3,10 @@
 Embeds the user's question, runs a hybrid (vector + keyword) search against
 the index to find the most relevant chunks, then passes those chunks to the
 chat model as grounding context to generate a final answer.
+
+The individual stages (client setup, embedding, retrieval, answer generation)
+are exposed as small reusable functions so other modules — notably the eval
+harness — can drive the exact same pipeline rather than re-implementing it.
 """
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
@@ -21,7 +25,36 @@ SYSTEM_PROMPT = (
 )
 
 # Toggle to print retrieved chunks for inspection/debugging.
-DEBUG_RETRIEVAL = True
+DEBUG_RETRIEVAL = False
+
+
+def get_clients() -> tuple[AzureOpenAI, SearchClient]:
+    """Construct the OpenAI and Search clients from settings.
+
+    Exposed so callers (app, evals) build clients once and reuse them across
+    many questions instead of reconstructing per call.
+    """
+    openai_client = AzureOpenAI(
+        azure_endpoint=settings.AOAI_ENDPOINT,
+        api_key=settings.AOAI_KEY,
+        api_version=settings.AOAI_API_VERSION,
+    )
+    search_client = SearchClient(
+        endpoint=settings.SEARCH_ENDPOINT,
+        index_name=settings.INDEX_NAME,
+        credential=AzureKeyCredential(settings.SEARCH_KEY),
+    )
+    return openai_client, search_client
+
+
+def embed_query(openai_client: AzureOpenAI, question: str) -> list[float]:
+    """Embed a question with the same model used for the chunks, so question
+    and chunks live in the same vector space."""
+    response = openai_client.embeddings.create(
+        model=settings.EMBED_DEPLOYMENT,
+        input=[question],
+    )
+    return response.data[0].embedding
 
 
 def retrieve(
@@ -51,28 +84,27 @@ def retrieve(
     return list(results)
 
 
+def generate_answer(openai_client: AzureOpenAI, question: str, context: str) -> str:
+    """Generate an answer grounded in the retrieved context.
+
+    Single source of truth for answer generation: both the live app and the
+    eval harness call this, so a change here is reflected in measurements.
+    """
+    chat_response = openai_client.chat.completions.create(
+        model=settings.CHAT_DEPLOYMENT,
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {question}"},
+        ],
+    )
+    return chat_response.choices[0].message.content
+
+
 def answer_question(question: str) -> str:
-    """Run the full RAG flow for a single question."""
-    openai_client = AzureOpenAI(
-        azure_endpoint=settings.AOAI_ENDPOINT,
-        api_key=settings.AOAI_KEY,
-        api_version=settings.AOAI_API_VERSION,
-    )
-    search_client = SearchClient(
-        endpoint=settings.SEARCH_ENDPOINT,
-        index_name=settings.INDEX_NAME,
-        credential=AzureKeyCredential(settings.SEARCH_KEY),
-    )
+    """Run the full RAG flow for a single question (embed → retrieve → answer)."""
+    openai_client, search_client = get_clients()
 
-    # 1. Embed the question with the same model used for the chunks, so
-    #    question and chunks live in the same vector space.
-    embed_response = openai_client.embeddings.create(
-        model=settings.EMBED_DEPLOYMENT,
-        input=[question],
-    )
-    query_vector = embed_response.data[0].embedding
-
-    # 2. Retrieve the most relevant chunks (hybrid search).
+    query_vector = embed_query(openai_client, question)
     chunks = retrieve(search_client, query_vector, question)
 
     if DEBUG_RETRIEVAL:
@@ -84,16 +116,7 @@ def answer_question(question: str) -> str:
         print("--- end ---\n")
 
     context = "\n\n".join(c["content"] for c in chunks)
-
-    # 3. Generate an answer grounded in the retrieved context.
-    chat_response = openai_client.chat.completions.create(
-        model=settings.CHAT_DEPLOYMENT,
-        messages=[
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": f"Context:\n{context}\n\nQuestion: {question}"},
-        ],
-    )
-    return chat_response.choices[0].message.content
+    return generate_answer(openai_client, question, context)
 
 
 if __name__ == "__main__":
