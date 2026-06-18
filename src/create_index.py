@@ -2,8 +2,10 @@
 
 Defines a schema with a vector field sized to the embedding model
 (text-embedding-3-small -> 1536 dimensions) and an HNSW configuration
-for approximate nearest-neighbour search. Running this is idempotent:
-create_or_update_index overwrites the existing index definition.
+for approximate nearest-neighbour search. Also defines a semantic
+configuration so Azure's semantic reranker (a cross-encoder) can re-score
+the top hybrid results. Running this is idempotent: create_or_update_index
+overwrites the existing index definition.
 """
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents.indexes import SearchIndexClient
@@ -17,13 +19,20 @@ from azure.search.documents.indexes.models import (
     HnswAlgorithmConfiguration,
     HnswParameters,
     VectorSearchProfile,
+    SemanticConfiguration,
+    SemanticSearch,
+    SemanticPrioritizedFields,
+    SemanticField,
 )
 
 from .config import settings
 
+# Name referenced by rag.py when issuing a semantic (reranked) query.
+SEMANTIC_CONFIG_NAME = "rag-semantic-config"
+
 
 def create_index() -> None:
-    """Create or update the search index with a vector field."""
+    """Create or update the search index with vector + semantic config."""
     client = SearchIndexClient(
         endpoint=settings.SEARCH_ENDPOINT,
         credential=AzureKeyCredential(settings.SEARCH_KEY),
@@ -34,6 +43,10 @@ def create_index() -> None:
         # content is searchable so we keep a keyword/text fallback alongside
         # vector search (hybrid retrieval is stronger than vector alone).
         SearchableField(name="content", type=SearchFieldDataType.String),
+        # LLM-generated metadata, used for filtering and display (not for
+        # semantic retrieval — that signal comes from prepending topic+summary
+        # into the embedded text). topic is filterable so retrieval can later
+        # be scoped to a subject when multiple sources/topics exist.
         SimpleField(name="topic", type=SearchFieldDataType.String, filterable=True),
         SimpleField(name="summary", type=SearchFieldDataType.String),
         SimpleField(name="source", type=SearchFieldDataType.String, filterable=True),
@@ -66,10 +79,26 @@ def create_index() -> None:
         ],
     )
 
+    # Semantic configuration: tells the reranker which field carries the main
+    # content to re-score. The reranker (a cross-encoder) reads query + content
+    # together for the top hybrid candidates and reorders them by true relevance.
+    semantic_search = SemanticSearch(
+        configurations=[
+            SemanticConfiguration(
+                name=SEMANTIC_CONFIG_NAME,
+                prioritized_fields=SemanticPrioritizedFields(
+                    content_fields=[SemanticField(field_name="content")],
+                    keywords_fields=[SemanticField(field_name="topic")],
+                ),
+            )
+        ]
+    )
+
     index = SearchIndex(
         name=settings.INDEX_NAME,
         fields=fields,
         vector_search=vector_search,
+        semantic_search=semantic_search,
     )
 
     result = client.create_or_update_index(index)

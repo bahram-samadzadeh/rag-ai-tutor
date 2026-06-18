@@ -225,5 +225,85 @@
       "10,000 rows",
       "display output"
     ]
+  },
+  {
+    "id": "q23",
+    "question": "If I'm running on an F64 capacity with Medium nodes, what's the most Spark nodes I can scale to?",
+    "reference_answer": "On F64 with Medium (8 vCores) nodes, the maximum is 16 nodes (Min 1, Max 16 for a Fabric custom pool on F64).",
+    "retrieval_keywords": [
+      "Medium (8 vCores)",
+      "Max: 16",
+      "F64"
+    ]
+  },
+  {
+    "id": "q24",
+    "question": "How long before an idle Fabric Spark session shuts itself down, and can I change that pause time?",
+    "reference_answer": "Fabric has a fixed 2-minute autopause after the session expires (not configurable), and the default session timeout is 20 minutes.",
+    "retrieval_keywords": [
+      "2-minute autopause",
+      "not configurable",
+      "20 minutes"
+    ]
+  },
+  {
+    "id": "q25",
+    "question": "Can several people share one Spark session at once in Fabric, and does Synapse allow the same?",
+    "reference_answer": "Fabric supports high concurrency mode, letting multiple users share a single Spark session. Azure Synapse does not support this feature.",
+    "retrieval_keywords": [
+      "high concurrency",
+      "share a",
+      "Synapse doesn't support"
+    ]
+  },
+  {
+    "id": "q26",
+    "question": "Why might my parquet writes be optimized automatically without me configuring anything?",
+    "reference_answer": "Because V-Order is enabled by default in Fabric; it's a write-time optimization applied to parquet files.",
+    "retrieval_keywords": [
+      "V-Order",
+      "enabled by default",
+      "write-time optimization"
+    ]
+  },
+  {
+    "id": "q27",
+    "question": "I want the newest Spark and Delta combination available — which runtime should I pick and what versions does it give me?",
+    "reference_answer": "Runtime 1.3 provides Spark 3.5 with Delta 3.1.",
+    "retrieval_keywords": [
+      "Runtime 1.3",
+      "Spark 3.5",
+      "Delta 3.1"
+    ]
+  },
+  {
+    "id": "q28",
+    "question": "My pipeline keeps failing with a giant query plan error — what's the underlying cause and how should I restructure it?",
+    "reference_answer": "The cause is Spark's Catalyst optimizer producing a very large logical/physical plan (excessive query complexity). Fix it by breaking the query down into smaller, staged queries and refactoring complex pipelines; Copilot can suggest refactoring.",
+    "retrieval_keywords": [
+      "Catalyst optimizer",
+      "Excessive query complexity",
+      "staged queries"
+    ]
+  },
+  {
+    "id": "q29",
+    "question": "How do I turn a fixed-size compute pool into one that grows and shrinks with demand in Fabric Spark?",
+    "reference_answer": "Use autoscale and dynamic allocation of executors; Fabric supports autoscale and dynamic allocation based on capacity.",
+    "retrieval_keywords": [
+      "Autoscale",
+      "Dynamic allocation",
+      "executors"
+    ]
+  },
+  {
+    "id": "q30",
+    "question": "What does it take, capacity-wise, to get 128 Spark vCores of compute?",
+    "reference_answer": "An F64 SKU provides 64 capacity units, which equals 128 Spark vCores (2 Spark vCores per capacity unit).",
+    "retrieval_keywords": [
+      "F64",
+      "128 Spark vCores",
+      "64 capacity units"
+    ]
   }
 ]
