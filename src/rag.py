@@ -80,6 +80,10 @@ def retrieve(
         vector_queries=[vector_query],
         select=["content", "topic", "summary", "source", "chunk_index"],
         top=k,
+        # Semantic reranker (cross-encoder) re-scores the hybrid candidates by
+        # reading query + content together, then we keep the top `k` reranked.
+        query_type="semantic",
+        semantic_configuration_name="rag-semantic-config",
     )
     return list(results)
 
