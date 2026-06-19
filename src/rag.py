@@ -14,6 +14,13 @@ from azure.search.documents.models import VectorizedQuery
 from openai import AzureOpenAI
 
 from .config import settings
+# Tracing setup must import before clients are constructed so the OpenAI SDK
+# is patched before get_clients() builds the AzureOpenAI client. See call below.
+from .tracing import setup_tracing, traced_retrieval, traced_ask
+
+# Activate Phoenix at module load — runs once, before any client is created.
+# Idempotent (guarded in tracing.py), so re-imports by the eval harness are safe.
+setup_tracing()
 
 
 # Instructs the model to answer only from retrieved context, which is
@@ -70,22 +77,33 @@ def retrieve(
     matching catches exact terms (e.g. "AutoSave", "Save failures") that a
     pure vector search can rank too low.
     """
-    vector_query = VectorizedQuery(
-        vector=query_vector,
-        k_nearest_neighbors=k,
-        fields="content_vector",
-    )
-    results = search_client.search(
-        search_text=query_text,
-        vector_queries=[vector_query],
-        select=["content", "topic", "summary", "source", "chunk_index"],
-        top=k,
-        # Semantic reranker (cross-encoder) re-scores the hybrid candidates by
-        # reading query + content together, then we keep the top `k` reranked.
-        query_type="semantic",
-        semantic_configuration_name="rag-semantic-config",
-    )
-    return list(results)
+    # Manual span: Azure Search is not an OpenAI call, so OpenInference can't
+    # see it. Without this the trace shows the answer but not WHICH chunks fed
+    # it — the half of the pipeline that actually breaks.
+    with traced_retrieval(query_text, k) as span:
+        vector_query = VectorizedQuery(
+            vector=query_vector,
+            k_nearest_neighbors=k,
+            fields="content_vector",
+        )
+        results = search_client.search(
+            search_text=query_text,
+            vector_queries=[vector_query],
+            select=["content", "topic", "summary", "source", "chunk_index"],
+            top=k,
+            # Semantic reranker (cross-encoder) re-scores the hybrid candidates by
+            # reading query + content together, then we keep the top `k` reranked.
+            query_type="semantic",
+            semantic_configuration_name="rag-semantic-config",
+        )
+        chunks = list(results)
+        # Record what was retrieved so the span is inspectable in the Phoenix UI.
+        span.set_attribute("retrieved_count", len(chunks))
+        span.set_attribute(
+            "retrieved_chunk_indices",
+            str([c.get("chunk_index") for c in chunks]),
+        )
+        return chunks
 
 
 def generate_answer(openai_client: AzureOpenAI, question: str, context: str) -> str:
@@ -106,21 +124,24 @@ def generate_answer(openai_client: AzureOpenAI, question: str, context: str) -> 
 
 def answer_question(question: str) -> str:
     """Run the full RAG flow for a single question (embed → retrieve → answer)."""
-    openai_client, search_client = get_clients()
+    # Parent span: nests embed + retrieve + generate under one tree, so each
+    # question renders as a single collapsible trace in the Phoenix UI.
+    with traced_ask(question):
+        openai_client, search_client = get_clients()
 
-    query_vector = embed_query(openai_client, question)
-    chunks = retrieve(search_client, query_vector, question)
+        query_vector = embed_query(openai_client, question)
+        chunks = retrieve(search_client, query_vector, question)
 
-    if DEBUG_RETRIEVAL:
-        print("\n--- Retrieved chunks ---")
-        for i, c in enumerate(chunks):
-            preview = c["content"][:200].replace("\n", " ")
-            print(f"[{i + 1}] chunk_index={c['chunk_index']}  topic={c.get('topic')!r}")
-            print(f"     {preview}...\n")
-        print("--- end ---\n")
+        if DEBUG_RETRIEVAL:
+            print("\n--- Retrieved chunks ---")
+            for i, c in enumerate(chunks):
+                preview = c["content"][:200].replace("\n", " ")
+                print(f"[{i + 1}] chunk_index={c['chunk_index']}  topic={c.get('topic')!r}")
+                print(f"     {preview}...\n")
+            print("--- end ---\n")
 
-    context = "\n\n".join(c["content"] for c in chunks)
-    return generate_answer(openai_client, question, context)
+        context = "\n\n".join(c["content"] for c in chunks)
+        return generate_answer(openai_client, question, context)
 
 
 if __name__ == "__main__":
