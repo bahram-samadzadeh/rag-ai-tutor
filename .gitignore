@@ -17,3 +17,5 @@ data/processed/
 .qodo/
 .vscode/
 .idea/
+.venv-eval/
+data/eval/ragas_dataset_*.json

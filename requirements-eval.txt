@@ -1,0 +1,24 @@
+# RAGAS evaluation environment — deliberately ISOLATED from the main .venv.
+#
+# Why a separate environment:
+#   ragas 0.4.3 (latest) imports `langchain_community.chat_models.vertexai`,
+#   a module that was removed in the langchain 1.x line, so ragas only works on
+#   the langchain 0.3.x stack. The main .venv must stay on langchain 1.x because
+#   langgraph (the agentic layer) requires langchain-core>=1.4. Those two pins
+#   are mutually exclusive, so RAGAS lives in its own venv instead of forcing the
+#   whole project onto an older langchain.
+#
+# Setup (Windows):
+#   python -m venv .venv-eval
+#   .venv-eval\Scripts\python -m pip install -r requirements-eval.txt
+#
+# This env only SCORES a pre-built dataset (produced by src/ragas_prep.py in the
+# main venv), so it does not need the Azure Search SDK — only an LLM + embeddings
+# client to drive the judge, which langchain-openai provides.
+
+ragas==0.4.3
+langchain<1.0
+langchain-community<1.0
+langchain-openai<1.0
+openai>=2.0
+python-dotenv
