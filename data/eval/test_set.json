@@ -41,57 +41,6 @@
     ]
   },
   {
-    "id": "q05",
-    "question": "Which Spark versions does Fabric Spark support, and which does it not support?",
-    "reference_answer": "Fabric Spark supports Spark 3.4, 3.5, and 4.0. It does not support Spark 2.4, 3.1, or 3.2.",
-    "retrieval_keywords": [
-      "Spark 3.4, 3.5",
-      "doesn't support Spark 2.4",
-      "3.1, or 3.2"
-    ]
-  },
-  {
-    "id": "q06",
-    "question": "Which runtime corresponds to Spark 3.5 and Delta 3.1 in Fabric?",
-    "reference_answer": "Spark 3.5 with Delta 3.1 corresponds to Runtime 1.3.",
-    "retrieval_keywords": [
-      "Spark 3.5",
-      "Delta 3.1",
-      "Runtime 1.3"
-    ]
-  },
-  {
-    "id": "q07",
-    "question": "What is the Fabric capacity conversion between Spark vCores and capacity units?",
-    "reference_answer": "Two Spark vCores equal one capacity unit. The maximum nodes available equals total vCores in capacity divided by vCores per node size.",
-    "retrieval_keywords": [
-      "2 Spark vCores",
-      "1 capacity unit",
-      "capacity conversion"
-    ]
-  },
-  {
-    "id": "q08",
-    "question": "How many capacity units and Spark vCores does the F64 SKU provide?",
-    "reference_answer": "SKU F64 provides 64 capacity units, which equals 128 Spark vCores.",
-    "retrieval_keywords": [
-      "F64",
-      "64 capacity units",
-      "128 Spark vCores"
-    ]
-  },
-  {
-    "id": "q09",
-    "question": "What is a materialized lake view in Fabric?",
-    "reference_answer": "A materialized lake view in Fabric is a persisted, automatically refreshed view defined in Spark.",
-    "retrieval_keywords": [
-      "materialized lake view",
-      "persisted",
-      "automatically refreshed",
-      "Spark"
-    ]
-  },
-  {
     "id": "q10",
     "question": "What should I do if the connection is dropped before my changes are saved in a Fabric notebook?",
     "reference_answer": "Check network connectivity (save failures are often caused by temporary internet or service disruptions), save a copy by duplicating the notebook to avoid losing unsaved changes, and ensure AutoSave is turned on (it is on by default; check under the Edit menu).",
@@ -103,79 +52,6 @@
     ]
   },
   {
-    "id": "q11",
-    "question": "What are the three data-quality zones you progress data through in a layered architecture in Fabric?",
-    "reference_answer": "The medallion architecture uses three layers: bronze, silver, and gold.",
-    "retrieval_keywords": [
-      "medallion",
-      "bronze, silver, and gold"
-    ]
-  },
-  {
-    "id": "q12",
-    "question": "What can you do from the Data Engineering homepage in Fabric?",
-    "reference_answer": "From the Data Engineering homepage you can create and manage data using a lakehouse, design pipelines to copy data into your lakehouse, use Spark job definitions to submit batch/streaming jobs to a Spark cluster, and use notebooks to write code for data ingestion, preparation, and transformation.",
-    "retrieval_keywords": [
-      "Data Engineering homepage",
-      "Spark job definitions",
-      "notebooks",
-      "pipelines"
-    ]
-  },
-  {
-    "id": "q13",
-    "question": "What is an Apache Spark job definition?",
-    "reference_answer": "A Spark job definition is a set of instructions that define how to execute a job on a Spark cluster, including the input and output data sources, the transformations, and the configuration settings for the Spark application.",
-    "retrieval_keywords": [
-      "Spark job definition",
-      "set of instructions",
-      "Spark cluster"
-    ]
-  },
-  {
-    "id": "q14",
-    "question": "What is the Fabric Livy API used for?",
-    "reference_answer": "The Livy API is used to create and run Spark jobs in Fabric, including submitting Livy API session jobs and batch jobs.",
-    "retrieval_keywords": [
-      "Livy API",
-      "Spark jobs",
-      "session jobs",
-      "batch jobs"
-    ]
-  },
-  {
-    "id": "q15",
-    "question": "How do you access the data engineering homepage in Fabric?",
-    "reference_answer": "Select Workloads from the navigation pane, then select the Data Engineering tile.",
-    "retrieval_keywords": [
-      "Workloads",
-      "navigation pane",
-      "Data Engineering tile"
-    ]
-  },
-  {
-    "id": "q16",
-    "question": "What causes an 'Excessive query complexity' error in Fabric Spark, and how do you fix it?",
-    "reference_answer": "It happens when Spark's Catalyst optimizer produces a very large logical/physical plan. To fix it, break the query down: refactor complex pipelines into smaller, staged queries, and you can use Copilot to surface performance insights and suggest refactoring.",
-    "retrieval_keywords": [
-      "Excessive query complexity",
-      "Catalyst optimizer",
-      "staged queries",
-      "break"
-    ]
-  },
-  {
-    "id": "q17",
-    "question": "What causes a collaboration conflict in a Fabric notebook?",
-    "reference_answer": "It happens when the same notebook is modified by another user outside of a collaboration session, such as through VS Code, the Update Definition API, manual save mode, a deployment pipeline, or Git sync.",
-    "retrieval_keywords": [
-      "collaboration",
-      "another user",
-      "VS Code",
-      "Git sync"
-    ]
-  },
-  {
     "id": "q18",
     "question": "How large a file can I open and edit directly inside a Fabric notebook before hitting the cap?",
     "reference_answer": "The file size limit for the file editor is 1 MB.",
@@ -183,16 +59,6 @@
       "file editor",
       "1 MB",
       "file size limit"
-    ]
-  },
-  {
-    "id": "q19",
-    "question": "Which two formats can't I open or modify in the Fabric notebook's built-in editor?",
-    "reference_answer": "The .xlsx and .parquet file types are not supported for viewing and editing.",
-    "retrieval_keywords": [
-      ".xlsx",
-      ".parquet",
-      "not supported"
     ]
   },
   {
@@ -227,16 +93,6 @@
     ]
   },
   {
-    "id": "q23",
-    "question": "If I'm running on an F64 capacity with Medium nodes, what's the most Spark nodes I can scale to?",
-    "reference_answer": "On F64 with Medium (8 vCores) nodes, the maximum is 16 nodes (Min 1, Max 16 for a Fabric custom pool on F64).",
-    "retrieval_keywords": [
-      "Medium (8 vCores)",
-      "Max: 16",
-      "F64"
-    ]
-  },
-  {
     "id": "q24",
     "question": "How long before an idle Fabric Spark session shuts itself down, and can I change that pause time?",
     "reference_answer": "Fabric has a fixed 2-minute autopause after the session expires (not configurable), and the default session timeout is 20 minutes.",
@@ -247,63 +103,161 @@
     ]
   },
   {
-    "id": "q25",
-    "question": "Can several people share one Spark session at once in Fabric, and does Synapse allow the same?",
-    "reference_answer": "Fabric supports high concurrency mode, letting multiple users share a single Spark session. Azure Synapse does not support this feature.",
+    "id": "h01",
+    "question": "I'm on an F64 capacity and want the largest individual node size that still lets me scale past 4 nodes. Which node size do I pick, and what's its max node count?",
+    "reference_answer": "Large (16 vCores) nodes. On F64, Large allows Min 1, Max 8 nodes. X-Large (32 vCores) only allows Max 4, so Large is the largest size that still permits more than 4 nodes.",
     "retrieval_keywords": [
-      "high concurrency",
-      "share a",
-      "Synapse doesn't support"
+      "Large (16 vCores)",
+      "Max: 8",
+      "X-Large (32 vCores)",
+      "Max: 4"
     ]
   },
   {
-    "id": "q26",
-    "question": "Why might my parquet writes be optimized automatically without me configuring anything?",
-    "reference_answer": "Because V-Order is enabled by default in Fabric; it's a write-time optimization applied to parquet files.",
+    "id": "h02",
+    "question": "On Fabric F32, how many concurrent Spark jobs can I run, how much capacity is left over after those jobs, and how does the max job count compare to a Synapse 24-node pool?",
+    "reference_answer": "On Fabric F32 you can run 6 max concurrent jobs (using 168 vCores), leaving 24 vCores remaining capacity. A Synapse 24-node pool allows only 3 max concurrent jobs, so F32 runs twice as many concurrent jobs.",
+    "retrieval_keywords": [
+      "6 (uses 168",
+      "24 vCores",
+      "3 (uses 21 nodes)",
+      "Max concurrent"
+    ]
+  },
+  {
+    "id": "h03",
+    "question": "If I need 192 Spark vCores of total compute, which Fabric SKU gives me that, and how many capacity units does that correspond to?",
+    "reference_answer": "Fabric F32 provides 192 Spark vCores (64 vCores x 3 burst = 192). Since 2 Spark vCores equal 1 capacity unit, that corresponds to 96 capacity units of Spark vCores; the F32 SKU itself is 32 capacity units with burst applied.",
+    "retrieval_keywords": [
+      "F32",
+      "192",
+      "2 Spark vCores",
+      "1 capacity unit"
+    ]
+  },
+  {
+    "id": "h04",
+    "question": "The parquet write optimization that Fabric turns on by default \u2014 what is its name, and what is the approximate trade-off it imposes on write times versus the compression benefit it gives?",
+    "reference_answer": "The optimization is V-Order, which is enabled by default in Fabric. It has about a 15% impact on average write times but can provide up to 50% more compression.",
     "retrieval_keywords": [
       "V-Order",
-      "enabled by default",
-      "write-time optimization"
+      "15%",
+      "50% more compression",
+      "write times"
     ]
   },
   {
-    "id": "q27",
-    "question": "I want the newest Spark and Delta combination available — which runtime should I pick and what versions does it give me?",
-    "reference_answer": "Runtime 1.3 provides Spark 3.5 with Delta 3.1.",
+    "id": "h05",
+    "question": "Find the Fabric runtime that ships the newest supported Spark version, then tell me which Delta Lake version that same runtime includes.",
+    "reference_answer": "The newest supported Spark version is Spark 3.5, which ships in Runtime 1.3. Runtime 1.3 includes Delta 3.1.",
     "retrieval_keywords": [
-      "Runtime 1.3",
-      "Spark 3.5",
-      "Delta 3.1"
+      "Spark 3.5 / Delta 3.1",
+      "Runtime 1.3"
     ]
   },
   {
-    "id": "q28",
-    "question": "My pipeline keeps failing with a giant query plan error — what's the underlying cause and how should I restructure it?",
-    "reference_answer": "The cause is Spark's Catalyst optimizer producing a very large logical/physical plan (excessive query complexity). Fix it by breaking the query down into smaller, staged queries and refactoring complex pipelines; Copilot can suggest refactoring.",
+    "id": "h06",
+    "question": "I want to set VACUUM retention below the default. State the default threshold, the exact Spark property I must change to go shorter, and the two operational risks of doing so.",
+    "reference_answer": "The default retention threshold is seven days. To go shorter you must set spark.databricks.delta.retentionDurationCheck.enabled to false in the Spark properties of the Fabric environment. The two risks are reduced Delta time-travel history and possible impact on concurrent readers or writers.",
     "retrieval_keywords": [
-      "Catalyst optimizer",
-      "Excessive query complexity",
-      "staged queries"
+      "seven days",
+      "retentionDurationCheck.enabled",
+      "time-travel",
+      "concurrent readers"
     ]
   },
   {
-    "id": "q29",
-    "question": "How do I turn a fixed-size compute pool into one that grows and shrinks with demand in Fabric Spark?",
-    "reference_answer": "Use autoscale and dynamic allocation of executors; Fabric supports autoscale and dynamic allocation based on capacity.",
+    "id": "h07",
+    "question": "Compare what 'the pool' fundamentally represents in Azure Synapse versus Fabric, and explain why that difference changes what limits your total parallelism in each.",
+    "reference_answer": "In Azure Synapse a Spark pool is a fixed compute resource and the actual compute boundary, so parallelism is limited by pool node count. In Fabric a Spark pool is a configuration template, not a fixed backing resource, so parallelism is limited by total Capacity vCores (plus burst), not by any pool max-size property.",
     "retrieval_keywords": [
-      "Autoscale",
-      "Dynamic allocation",
-      "executors"
+      "configuration template",
+      "compute boundary",
+      "Capacity (vCores + burst)",
+      "Pool node count"
     ]
   },
   {
-    "id": "q30",
-    "question": "What does it take, capacity-wise, to get 128 Spark vCores of compute?",
-    "reference_answer": "An F64 SKU provides 64 capacity units, which equals 128 Spark vCores (2 Spark vCores per capacity unit).",
+    "id": "h08",
+    "question": "A data engineer with no Spark experience needs to ingest petabyte-scale data from databases, file systems, and APIs on a schedule, following bronze/silver/gold, using as little code as possible. Which Fabric ingestion choice fits, and why is it preferred over a code-first option?",
+    "reference_answer": "Pipeline copy activity. It is the best low-code/no-code choice for moving petabyte-scale data from varied sources to lakehouses and warehouses, supports scheduled and ad-hoc runs, handles historical and incremental refresh, and requires no per-connector code, which suits an engineer without Spark experience.",
+    "retrieval_keywords": [
+      "pipeline copy activity",
+      "petabyte",
+      "low-code",
+      "no-code"
+    ]
+  },
+  {
+    "id": "h09",
+    "question": "An experienced Power Query user needs to clean low-to-medium-volume data and write it to multiple destinations like Azure SQL DB and a lakehouse with a visual, low-code interface. Which Fabric transformation tool should they pick, and what capability makes it the right fit?",
+    "reference_answer": "Dataflow Gen2. It provides a no-code/low-code, highly visual interface, supports 300+ data transformation options, can ingest from hundreds of sources, and can write results to multiple destinations, which matches an experienced Power Query user working with low-to-medium volume.",
+    "retrieval_keywords": [
+      "Dataflow Gen 2",
+      "Power Query",
+      "300+",
+      "multiple destinations"
+    ]
+  },
+  {
+    "id": "h10",
+    "question": "An integrator needs to forward business-application event data into Fabric for real-time decision support without managing extraction schedules, at medium-to-high volume with a no-code preference. Which Fabric feature meets this, and what property of it removes the scheduling burden?",
+    "reference_answer": "Eventstreams in Microsoft Fabric. It seamlessly forwards events as they occur without managing extraction schedules, which suits real-time decision support at medium-to-high volume with a no-code preference.",
+    "retrieval_keywords": [
+      "Eventstreams",
+      "real-time",
+      "without managing extraction schedules"
+    ]
+  },
+  {
+    "id": "h11",
+    "question": "Which node sizes have identical vCores and memory across both Azure Synapse and Fabric, and which size is the exception that differs?",
+    "reference_answer": "Node sizes Small through X-Large have identical vCores and memory in both Azure Synapse and Fabric. XX-Large is the exception that differs between the two.",
+    "retrieval_keywords": [
+      "Small through X-Large",
+      "identical vCores",
+      "XX-Large"
+    ]
+  },
+  {
+    "id": "h12",
+    "question": "After running VACUUM, will my current table data or recent time-travel history be removed? Explain precisely what VACUUM deletes and what it preserves.",
+    "reference_answer": "VACUUM does not delete current data. It only removes files no longer referenced by the Delta log that are older than the retention threshold. Files still referenced by the Delta log are preserved regardless of age; current data and in-retention history remain intact.",
+    "retrieval_keywords": [
+      "no longer referenced",
+      "Delta log",
+      "retention threshold"
+    ]
+  },
+  {
+    "id": "h13",
+    "question": "Two file types can't be opened in the Fabric notebook's built-in file editor, and there's a size cap on what can be edited. Name both unsupported types and the size limit.",
+    "reference_answer": "The .xlsx and .parquet file types are not supported for viewing and editing in the file editor, and the file editor size limit is 1 MB.",
+    "retrieval_keywords": [
+      ".xlsx",
+      ".parquet",
+      "1 MB",
+      "file editor"
+    ]
+  },
+  {
+    "id": "h14",
+    "question": "What is the maximum number of nodes a Fabric Spark XX-Large pool can scale to on an F128 capacity?",
+    "reference_answer": "The documentation only provides node limits for the F64 SKU (XX-Large: Min 1, Max 2 on F64); it does not state node limits for an F128 capacity, so this cannot be answered from the source material.",
+    "retrieval_keywords": [
+      "XX-Large",
+      "F64",
+      "Max: 2"
+    ]
+  },
+  {
+    "id": "h15",
+    "question": "According to the documentation, what is the exact monthly cost in US dollars of running an F64 capacity continuously?",
+    "reference_answer": "The documentation does not provide pricing or monthly cost figures for F64 or any capacity SKU, so this cannot be answered from the source material.",
     "retrieval_keywords": [
       "F64",
-      "128 Spark vCores",
-      "64 capacity units"
+      "capacity units",
+      "Spark vCores"
     ]
   }
 ]
