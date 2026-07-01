@@ -12,6 +12,10 @@ instead of trusting the whole answer.
 It does NOT rewrite the answer or retrieve anything itself. It only reports
 grounding, so the graph can decide whether to loop (re-retrieve) or stop.
 
+Verification runs on VERIFY_DEPLOYMENT (a reasoning model), separate from the
+generator — an independent judge catches errors the generator is blind to.
+Reasoning models reject a custom temperature, so none is passed here.
+
 Pure node: client injected, no I/O beyond the LLM call, no import-time side
 effects. Feeds the coverage/retry logic in graph.py.
 """
@@ -69,8 +73,7 @@ def verify_answer(
     user_content = f"CONTEXT:\n{context}\n\nANSWER:\n{answer}"
 
     response = openai_client.chat.completions.create(
-        model=settings.CHAT_DEPLOYMENT,
-        temperature=0,
+        model=settings.VERIFY_DEPLOYMENT,
         messages=[
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": user_content},
@@ -99,3 +102,54 @@ def verify_answer(
 
     # Fail-safe: unparseable => treat as unverified, never as "all good".
     return {"claims": [], "unsupported": [], "all_supported": False}
+
+
+def check_claim(
+    openai_client: AzureOpenAI,
+    claim: str,
+    chunks: list[dict],
+) -> bool:
+    """Re-check a single atomic claim against freshly retrieved chunks.
+
+    Used inside the self-correction loop: after re-retrieving for one
+    unsupported claim, ask the reasoning model whether the NEW chunks now
+    ground it. Lighter than verify_answer — the claim is already atomic, so
+    there is nothing to decompose, only to judge.
+
+    Args:
+        openai_client: injected reasoning client — built once upstream.
+        claim: one atomic claim (from verify_answer's 'unsupported' list).
+        chunks: freshly retrieved chunks for that claim.
+
+    Returns:
+        True if the chunks support the claim, else False. On any parse
+        failure returns False (fail-safe: an unverifiable claim stays
+        unsupported, so the loop never promotes a shaky claim to "grounded").
+    """
+    import json
+
+    context = "\n\n".join(c.get("content", "") for c in chunks)
+    user_content = f"CONTEXT:\n{context}\n\nCLAIM:\n{claim}"
+
+    response = openai_client.chat.completions.create(
+        model=settings.VERIFY_DEPLOYMENT,
+        messages=[
+            {
+                "role": "system",
+                "content": (
+                    "You judge whether the CONTEXT supports the CLAIM. A claim "
+                    "is supported only if the context states or clearly entails "
+                    "it. If the context is silent, vague, or contradicts it, it "
+                    "is not supported. Use only the given context, not outside "
+                    'knowledge. Return ONLY JSON: {"supported": <true|false>}.'
+                ),
+            },
+            {"role": "user", "content": user_content},
+        ],
+    )
+    raw = (response.choices[0].message.content or "").strip()
+
+    try:
+        return bool(json.loads(raw).get("supported", False))
+    except (json.JSONDecodeError, TypeError, AttributeError):
+        return False
