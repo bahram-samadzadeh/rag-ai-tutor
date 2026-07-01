@@ -6,7 +6,8 @@ chat model as grounding context to generate a final answer.
 
 The individual stages (client setup, embedding, retrieval, answer generation)
 are exposed as small reusable functions so other modules — notably the eval
-harness — can drive the exact same pipeline rather than re-implementing it.
+harness and, going forward, graph.py's orchestrator — can drive the exact
+same pipeline rather than re-implementing it.
 """
 from azure.core.credentials import AzureKeyCredential
 from azure.search.documents import SearchClient
@@ -38,8 +39,8 @@ DEBUG_RETRIEVAL = False
 def get_clients() -> tuple[AzureOpenAI, SearchClient]:
     """Construct the OpenAI and Search clients from settings.
 
-    Exposed so callers (app, evals) build clients once and reuse them across
-    many questions instead of reconstructing per call.
+    Exposed so callers (app, evals, graph.py) build clients once and reuse
+    them across many questions instead of reconstructing per call.
     """
     openai_client = AzureOpenAI(
         azure_endpoint=settings.AOAI_ENDPOINT,
@@ -122,13 +123,22 @@ def generate_answer(openai_client: AzureOpenAI, question: str, context: str) -> 
     return chat_response.choices[0].message.content
 
 
-def answer_question(question: str) -> str:
-    """Run the full RAG flow for a single question (embed → retrieve → answer)."""
+def answer_question(
+    question: str,
+    openai_client: AzureOpenAI,
+    search_client: SearchClient,
+) -> str:
+    """Run the linear RAG flow for a single question (embed → retrieve → answer).
+
+    Clients are passed in rather than constructed here. This makes the
+    function a pure, injectable node — graph.py will build clients ONCE at
+    startup and hand them to every node (this one included), instead of each
+    node reconstructing its own. Same reason your other functions already
+    take clients as arguments.
+    """
     # Parent span: nests embed + retrieve + generate under one tree, so each
     # question renders as a single collapsible trace in the Phoenix UI.
     with traced_ask(question):
-        openai_client, search_client = get_clients()
-
         query_vector = embed_query(openai_client, question)
         chunks = retrieve(search_client, query_vector, question)
 
@@ -145,6 +155,9 @@ def answer_question(question: str) -> str:
 
 
 if __name__ == "__main__":
+    # Clients built ONCE here, then injected — same pattern graph.py will use.
+    openai_client, search_client = get_clients()
+
     question = "What should i do when the connection is dropped before saving the changes in Microsoft Fabric?"
     print(f"Q: {question}\n")
-    print(f"A: {answer_question(question)}")
+    print(f"A: {answer_question(question, openai_client, search_client)}")
