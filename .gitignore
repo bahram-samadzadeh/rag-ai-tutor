@@ -19,3 +19,6 @@ data/processed/
 .idea/
 .venv-eval/
 data/eval/ragas_dataset_*.json
+# Notebooks
+.ipynb_checkpoints/
+*.ipynb

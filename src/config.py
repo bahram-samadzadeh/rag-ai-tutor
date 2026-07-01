@@ -13,6 +13,7 @@ class Settings:
     EMBED_DEPLOYMENT = os.getenv("EMBED_DEPLOYMENT", "text-embedding-3-small")
     CHAT_DEPLOYMENT = os.getenv("CHAT_DEPLOYMENT", "gpt-4.1-mini")
     ENRICH_DEPLOYMENT = os.getenv("ENRICH_DEPLOYMENT", "gpt-4.1-mini")
+    VERIFY_DEPLOYMENT = os.getenv("VERIFY_DEPLOYMENT", "o4-mini")
     EMBED_DIMENSIONS = int(os.getenv("EMBED_DIMENSIONS", "1536"))
 
     # Azure AI Search

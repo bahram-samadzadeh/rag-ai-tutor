@@ -9,6 +9,7 @@ class AgentState(TypedDict, total=False):
     sub_questions: list[str]
     bridge_entities: list[str]
     required_relationships: list[str]
+    rewritten_query: str
     rewritten_queries: list[str]
     retrieved_chunks: list[dict]
     coverage_ok: bool
@@ -18,6 +19,9 @@ class AgentState(TypedDict, total=False):
     missing_relationships: list[str]
     critical_constraint: Optional[str]
     constraint_verified: bool
+    grounded_facts: list[str]
+    unsupported: list[str]
+    not_found: list[str]
     refused: bool
     confidence: float
     answer: str
