@@ -19,6 +19,8 @@ class Settings:
     # Azure AI Search
     SEARCH_ENDPOINT = os.environ["AZURE_SEARCH_ENDPOINT"]
     SEARCH_KEY = os.environ["AZURE_SEARCH_KEY"]
+    CONTENT_SAFETY_ENDPOINT = os.environ["AZURE_CONTENT_SAFETY_ENDPOINT"]
+    CONTENT_SAFETY_KEY = os.environ["AZURE_CONTENT_SAFETY_KEY"]
     INDEX_NAME = os.getenv("AZURE_SEARCH_INDEX", "rag-index")
 
     # Chunking
