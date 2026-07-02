@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      # Dummy values: config.py requires these at import time, but the tests
+      # mock every Azure call, so no real credentials are needed in CI.
+      AZURE_OPENAI_ENDPOINT: https://dummy.openai.azure.com/
+      AZURE_OPENAI_KEY: dummy
+      AZURE_SEARCH_ENDPOINT: https://dummy.search.windows.net
+      AZURE_SEARCH_KEY: dummy
+      AZURE_CONTENT_SAFETY_ENDPOINT: https://dummy.cognitiveservices.azure.com/
+      AZURE_CONTENT_SAFETY_KEY: dummy
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt pytest httpx
+
+      - name: Run tests
+        run: python -m pytest tests/ -v
