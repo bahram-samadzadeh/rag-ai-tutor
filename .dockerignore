@@ -1,0 +1,7 @@
+.venv/
+.venv-eval/
+.env
+__pycache__/
+data/
+*.ipynb
+.git/
